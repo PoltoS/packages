@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 # Name and release number of this package
 PKG_NAME:=libv8
-PKG_VERSION:=38d2d515ddeace8ea4719938f86edf316d29b576
+PKG_VERSION:=3606220e348799e7b5332d191a456bfd4ab67df1
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
@@ -22,10 +22,12 @@ PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 
+BUILD_TYPE:=debug
+
 export GYP_DEFINES=linux_use_bundled_binutils=0 linux_use_debug_fission=0 clang=0 werror= component=shared_library
 export GYPFLAGS=-Dv8_use_mips_abi_hardfloat=false -Dv8_can_use_fpu_instructions=false -Dtarget_cxx_is_biarch=0 -Dhost_cxx_is_biarch=0
-export V8_ARGS=library=shared i18nsupport=off $(ARCH).release
-export CFLAGS=-ffat-lto-objects
+export V8_ARGS=library=shared i18nsupport=off $(ARCH).$(BUILD_TYPE)
+export CXXFLAGS=-msoft-float
 export V8_TARGET_ARCH=$(ARCH)
 
 # send all variable to submake
@@ -38,7 +40,7 @@ define Package/libv8
 	TITLE:=Google v8 JavaScript engine
 	URL:=http://code.google.com/p/v8/
 	MAINTAINER:=Google
-	DEPENDS+= +libpthread +librt
+	DEPENDS+= +libpthread +librt +libstdcpp
 endef
 
 define Package/libv8/description
@@ -70,6 +72,8 @@ endef
 define Package/libv8/install
 	$(INSTALL_DIR) $(1)/usr/lib/
 	$(CP) $(PKG_BUILD_DIR)/out/$(ARCH).release/lib.target/* $(1)/usr/lib/
+	$(INSTALL_DIR) $(1)/usr/bin/
+	$(CP) $(PKG_BUILD_DIR)/out/$(ARCH).release/d8 $(1)/usr/bin/
 endef
 
 # This line executes the necessary commands to compile our program.
