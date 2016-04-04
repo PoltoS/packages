@@ -10,7 +10,7 @@ include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=iptables
 PKG_VERSION:=1.4.12
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_MD5SUM:=d3f145c2c91daecbb4251bc79390b46c
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
@@ -124,7 +124,7 @@ Includes:
 endef
 
 define Package/iptables-mod-ipopt
-$(call Package/iptables/Module, +kmod-ipt-ipopt)
+$(call Package/iptables/Module,)
   TITLE:=IP/Packet option extensions
 endef
 
@@ -145,7 +145,7 @@ Includes:
 endef
 
 define Package/iptables-mod-ipsec
-$(call Package/iptables/Module, +kmod-ipt-ipsec)
+$(call Package/iptables/Module,)
   TITLE:=IPsec extensions
 endef
 
@@ -260,7 +260,7 @@ endef
 
 define Package/ip6tables
 $(call Package/iptables/Default)
-  DEPENDS:=+kmod-ip6tables +libiptc +libxtables +libxtables6
+  DEPENDS:=+kmod-ip6tables +iptables
   CATEGORY:=IPv6
   TITLE:=IPv6 firewall administration tool
   MENU:=1
@@ -316,7 +316,7 @@ CONFIGURE_ARGS += \
 	--enable-ipv6 \
 	--enable-libipq \
 	--with-kernel="$(LINUX_DIR)" \
-	--with-xtlibdir=/usr/lib/iptables
+	--with-xtlibdir=/opt/usr/lib/iptables
 
 MAKE_FLAGS := \
 	$(TARGET_CONFIGURE_OPTS) \
@@ -351,10 +351,10 @@ define Package/iptables/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/iptables $(1)/usr/sbin/
 	$(INSTALL_DIR) $(1)/usr/lib/iptables
-	(cd $(PKG_INSTALL_DIR)/usr/lib/iptables ; \
+	(cd $(PKG_INSTALL_DIR)/opt/usr/lib/iptables ; \
 		for m in $(patsubst xt_%,ipt_%,$(IPT_BUILTIN)) $(patsubst ipt_%,xt_%,$(IPT_BUILTIN)); do \
-			if [ -f $(PKG_INSTALL_DIR)/usr/lib/iptables/lib$$$${m}.so ]; then \
-				$(CP) $(PKG_INSTALL_DIR)/usr/lib/iptables/lib$$$${m}.so $(1)/usr/lib/iptables/ ;\
+			if [ -f $(PKG_INSTALL_DIR)/opt/usr/lib/iptables/lib$$$${m}.so ]; then \
+				$(CP) $(PKG_INSTALL_DIR)/opt/usr/lib/iptables/lib$$$${m}.so $(1)/usr/lib/iptables/ ;\
 			fi; \
 		done \
 	)
@@ -369,7 +369,7 @@ define Package/ip6tables/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/ip6tables $(1)/usr/sbin/
 	$(INSTALL_DIR) $(1)/usr/lib/iptables
-	(cd $(PKG_INSTALL_DIR)/usr/lib/iptables ; \
+	(cd $(PKG_INSTALL_DIR)/opt/usr/lib/iptables ; \
 		$(CP) libip6t_*.so $(1)/usr/lib/iptables/ \
 	)
 endef
@@ -389,12 +389,12 @@ define Package/libxtables/install
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libxtables.so* $(1)/usr/lib/
 endef
 
-define Package/libxtables6/install
-	$(INSTALL_DIR) $(1)/usr/lib/iptables
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/iptables/libxt_limit.so $(1)/usr/lib/iptables/
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/iptables/libxt_standard.so $(1)/usr/lib/iptables/
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/iptables/libxt_conntrack.so $(1)/usr/lib/iptables/
-endef
+#define Package/libxtables6/install
+#	$(INSTALL_DIR) $(1)/usr/lib/iptables
+#	$(CP) $(PKG_INSTALL_DIR)/opt/usr/lib/iptables/libxt_limit.so $(1)/usr/lib/iptables/
+#	$(CP) $(PKG_INSTALL_DIR)/opt/usr/lib/iptables/libxt_standard.so $(1)/usr/lib/iptables/
+#	$(CP) $(PKG_INSTALL_DIR)/opt/usr/lib/iptables/libxt_conntrack.so $(1)/usr/lib/iptables/
+#endef
 
 define Package/libipq/install
 	$(INSTALL_DIR) $(1)/usr/lib
@@ -405,8 +405,8 @@ define BuildPlugin
   define Package/$(1)/install
 	$(INSTALL_DIR) $$(1)/usr/lib/iptables
 	for m in $(patsubst xt_%,ipt_%,$(2)) $(patsubst ipt_%,xt_%,$(2)); do \
-		if [ -f $(PKG_INSTALL_DIR)/usr/lib/iptables/lib$$$$$$$${m}.so ]; then \
-			$(CP) $(PKG_INSTALL_DIR)/usr/lib/iptables/lib$$$$$$$${m}.so $$(1)/usr/lib/iptables/ ; \
+		if [ -f $(PKG_INSTALL_DIR)/opt/usr/lib/iptables/lib$$$$$$$${m}.so ]; then \
+			$(CP) $(PKG_INSTALL_DIR)/opt/usr/lib/iptables/lib$$$$$$$${m}.so $$(1)/usr/lib/iptables/ ; \
 		fi; \
 	done
   endef
@@ -431,5 +431,5 @@ $(eval $(call BuildPackage,ip6tables))
 $(eval $(call BuildPackage,ip6tables-utils))
 $(eval $(call BuildPackage,libiptc))
 $(eval $(call BuildPackage,libxtables))
-$(eval $(call BuildPackage,libxtables6))
+# $(eval $(call BuildPackage,libxtables6))
 $(eval $(call BuildPackage,libipq))
