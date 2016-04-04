@@ -9,20 +9,20 @@ include $(TOPDIR)/rules.mk
 
 # Name and release number of this package
 PKG_NAME:=libv8
-PKG_VERSION:=3606220e348799e7b5332d191a456bfd4ab67df1
+#!!PKG_VERSION:=HEAD
 PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://github.com/v8/v8
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=$(PKG_VERSION)
-PKG_SOURCE_PROTO:=git
+#!!PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+#!!PKG_SOURCE_URL:=https://github.com/v8/v8
+#!!PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+#!!PKG_SOURCE_VERSION:=$(PKG_VERSION)
+#!!PKG_SOURCE_PROTO:=git
 
 PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 
-BUILD_TYPE:=debug
+BUILD_TYPE:=release
 
 export GYP_DEFINES=linux_use_bundled_binutils=0 linux_use_debug_fission=0 clang=0 werror= component=shared_library
 export GYPFLAGS=-Dv8_use_mips_abi_hardfloat=false -Dv8_can_use_fpu_instructions=false -Dtarget_cxx_is_biarch=0 -Dhost_cxx_is_biarch=0
@@ -48,20 +48,24 @@ define Package/libv8/description
 endef
 
 define Build/Prepare
+	cd $(PKG_BUILD_DIR) && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git && \
+	PATH=`pwd`/depot_tools:"$${PATH}" fetch --no-history v8 && \
+	PATH=`pwd`/depot_tools:"$${PATH}" gclient sync
+
+	# This will handle patching
 	$(call Build/Prepare/Default)
-	$(MAKE) -C $(PKG_BUILD_DIR) dependencies
 endef
 
 define Build/Compile
 	CXX=$(TARGET_CXX) LD=$(TARGET_CXX) LINK=$(TARGET_CXX) \
-	$(MAKE) -C $(PKG_BUILD_DIR) $(V8_ARGS)
+	$(MAKE) -C $(PKG_BUILD_DIR)/v8 $(V8_ARGS)
 endef
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(INSTALL_DIR) $(1)/usr/include
-	$(CP) $(PKG_BUILD_DIR)/out/$(ARCH).$(BUILD_TYPE)/lib.target/* $(1)/usr/lib/
-	$(CP) $(PKG_BUILD_DIR)/include/* $(1)/usr/include/
+	$(CP) $(PKG_BUILD_DIR)/v8/out/$(ARCH).$(BUILD_TYPE)/lib.target/* $(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/v8/include/* $(1)/usr/include/
 endef
 
 # The $(1) variable represents the root directory on the router running
@@ -71,9 +75,9 @@ endef
 # directory) to the install directory.
 define Package/libv8/install
 	$(INSTALL_DIR) $(1)/usr/lib/
-	$(CP) $(PKG_BUILD_DIR)/out/$(ARCH).$(BUILD_TYPE)/lib.target/* $(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/v8/out/$(ARCH).$(BUILD_TYPE)/lib.target/* $(1)/usr/lib/
 	$(INSTALL_DIR) $(1)/usr/bin/
-	$(CP) $(PKG_BUILD_DIR)/out/$(ARCH).$(BUILD_TYPE)/d8 $(1)/usr/bin/
+	$(CP) $(PKG_BUILD_DIR)/v8/out/$(ARCH).$(BUILD_TYPE)/d8 $(1)/usr/bin/
 endef
 
 # This line executes the necessary commands to compile our program.
