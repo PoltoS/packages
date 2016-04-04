@@ -60,7 +60,7 @@ endef
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(INSTALL_DIR) $(1)/usr/include
-	$(CP) $(PKG_BUILD_DIR)/out/$(ARCH).release/lib.target/* $(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/out/$(ARCH).$(BUILD_TYPE)/lib.target/* $(1)/usr/lib/
 	$(CP) $(PKG_BUILD_DIR)/include/* $(1)/usr/include/
 endef
 
@@ -71,9 +71,9 @@ endef
 # directory) to the install directory.
 define Package/libv8/install
 	$(INSTALL_DIR) $(1)/usr/lib/
-	$(CP) $(PKG_BUILD_DIR)/out/$(ARCH).release/lib.target/* $(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/out/$(ARCH).$(BUILD_TYPE)/lib.target/* $(1)/usr/lib/
 	$(INSTALL_DIR) $(1)/usr/bin/
-	$(CP) $(PKG_BUILD_DIR)/out/$(ARCH).release/d8 $(1)/usr/bin/
+	$(CP) $(PKG_BUILD_DIR)/out/$(ARCH).$(BUILD_TYPE)/d8 $(1)/usr/bin/
 endef
 
 # This line executes the necessary commands to compile our program.
